@@ -1,15 +1,18 @@
+""" 
+Script defining architecture of RetinaNet backbone
+(ResNet-50 + FPN)
+"""
+
 import warnings
 from typing import Callable, Dict, List, Optional
 
 from torch import nn, Tensor
-
 from torchvision.models.resnet import resnet50 
 from torchvision.ops import misc as misc_nn_ops
 from torchvision.models.detection.retinanet import ResNet50_Weights
 from torchvision.ops.feature_pyramid_network import LastLevelP6P7, ExtraFPNBlock, FeaturePyramidNetwork, LastLevelMaxPool
 from torchvision.models import resnet
 from torchvision.models._utils import IntermediateLayerGetter
-
 
 
 class BackboneWithFPN(nn.Module):
@@ -61,7 +64,6 @@ class BackboneWithFPN(nn.Module):
         return x1, x2
     
 
-
 def create_backbone():
     weights_backbone = ResNet50_Weights.IMAGENET1K_V1
     is_trained = False
@@ -75,7 +77,6 @@ def create_backbone():
         backbone, trainable_backbone_layers, returned_layers=[2, 3, 4], extra_blocks=LastLevelP6P7(256, 256)
     )
     return backbone
-
 
 
 def _validate_trainable_layers(

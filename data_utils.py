@@ -1,3 +1,8 @@
+""" 
+Script implementing utility functions for data preprocessing and handling
+Should not be needed, since the final output of all of these is RT-Trees, already provided
+"""
+
 from utm_converter import utm
 import os
 from tqdm import tqdm
@@ -27,8 +32,7 @@ def split_based_on_GPS(date, cutoff = (607840, 5907125)):
     train_set = []
     test_set = []
 
-
-    # NOTE:turn on
+    # NOTE: need exiftool installed
     if '08_30' not in date:
         call = f"exiftool -a {gps_dir} -ext jpeg > exif_tmp.txt"
     else:
@@ -62,8 +66,6 @@ def split_based_on_GPS(date, cutoff = (607840, 5907125)):
             except:
                 print(line)
                 
-
-
         lat = exif_dict["GPS Latitude"].split(" ")
         lon = exif_dict["GPS Longitude"].split(" ")
 
@@ -104,16 +106,6 @@ def move_images(date, train_set, test_set):
             os.makedirs(rgb_test_opd), os.makedirs(thm_test_opd)
     except: pass
 
-    # loop over training set, copy images
-    # for name in (pbar:=tqdm(train_set, leave=False)):
-    #     pbar.set_description("Moving Train Images")
-    #     rgb_src_path = f'{rgb_src_dir}/{name}.tif'
-    #     thm_src_path = f'{thm_src_dir}/{name}.tif'
-        
-    #     if os.path.exists(rgb_src_path): # check in case it wasnt undistorted
-    #         shutil.copy(rgb_src_path, rgb_train_opd)
-    #         shutil.copy(thm_src_path, thm_train_opd)
-
     # for test set, only move 2022_08_30 images
     if date == '2022_08_30':
         for name in tqdm(test_set):
@@ -140,13 +132,9 @@ def crop_single_test_image(src_path, dst_path, p=500):
 
 
 def crop_test_data(rgb_dir = f'data/test/all/rgb', rgb_outdir = f'data/test/rgb', do_thermal=True, p=500):
-    
+    """ Center crop test data """
     fnames = os.listdir(rgb_dir)
     paths = [f'{rgb_dir}/{fname}' for fname in fnames]
-
-    # model = main.deepforest()
-    # model.use_release()
-
     
     try: os.makedirs(rgb_outdir)
     except: pass
@@ -158,14 +146,10 @@ def crop_test_data(rgb_dir = f'data/test/all/rgb', rgb_outdir = f'data/test/rgb'
         h,w,_ = img.shape
 
         patch = img[h//2-p//2:h//2+p//2, w//2-p//2:+w//2+p//2]
-        # patch = model.predict_image(image=patch, return_plot=True)
-        # print(patch)
-        # exit()
         plt.imshow(patch)
         if idx == 4:
             break
 
-        # skimage.io.imsave(f'{rgb_outdir}/{fnames[idx*3]}', patch)
     plt.show()
     exit()
     x = 3
@@ -228,6 +212,9 @@ def split_image(img, patch_size):
 
 
 def patchify_train_data(date, p=500):
+    """
+    Split train images into 6x500x500 patches
+    """
     # get rgb image paths and make rgb out directory
     rgb_dir = f'data/train/all/{date}/rgb'
     rgb_fnames = os.listdir(rgb_dir)
@@ -281,29 +268,6 @@ def patchify_train_data(date, p=500):
     move_images_from_dates(thm_paths, thm_fnames, thm_outdir)
 
 
-def rename_test_imgs():
-    rgb_dir = 'data/test/other'
-    # rgb_dir = 'data/test/rgb'
-    # thm_dir = 'data/test/thermal'
-    fnames = os.listdir(rgb_dir)
-
-    count = 1
-    # for fname in fnames:
-    for fname in fnames:
-
-        src_path_rgb = f'{rgb_dir}/{fname}'
-        # src_path_thm = f'{thm_dir}/{fname}'
-
-
-        fid = str(count).zfill(2)
-        fname = f'img_{fid}.tif'
-        count += 1
-        dst_path_rgb = f'{rgb_dir}/{fname}'
-        # dst_path_thm = f'{thm_dir}/{fname}'
-        os.rename(src_path_rgb, dst_path_rgb)
-        # os.rename(src_path_thm, dst_path_thm)
-
-
 
 def write_xml(path, filename, bbox_list, save_dir_suffix, size=[500,500]):
     ''' 
@@ -322,16 +286,12 @@ def write_xml(path, filename, bbox_list, save_dir_suffix, size=[500,500]):
     SubElement(source, 'database').text = 'Unknown'
 
     # get size
-    # if img is None:
-    #     print(f'{path}/{filename}')
-    #     img = skimage.io.imread(f'{path}/{filename}')
     height, width = size
     
     size = SubElement(root, 'size')
     SubElement(size, 'width').text = str(width)
     SubElement(size, 'height').text = str(height)
     SubElement(size, 'depth').text = '3'
-
     SubElement(root, 'segmented').text = '0'
 
     # TODO: maybe also put score somewhere
@@ -361,6 +321,9 @@ def write_xml(path, filename, bbox_list, save_dir_suffix, size=[500,500]):
 
 
 def save_gt_only_difficult(gt_dir, save_dir):
+    """
+    Save gt annotations for difficult boxes
+    """
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
@@ -381,7 +344,12 @@ def save_gt_only_difficult(gt_dir, save_dir):
         with open(xml_filename, 'w'):
             tree.write(xml_filename)
 
+
+# -------- Descriptive statistics of RT-Trees --------
 def count_difficult(gt_dir):
+    """
+    Count number of difficult boxes in all images within passed annotations dir.
+    """
     count,total = 0,0
     l1, l2 = [], []
     files = os.listdir(gt_dir)
@@ -406,6 +374,9 @@ def count_difficult(gt_dir):
        
 
 def get_areas(gt_dir):
+    """
+    Compute areas of all/difficult boxes in all images within passed annotations dir.
+    """
     files = os.listdir(gt_dir)
     all_areas, other_areas, difficult_areas = [], [], []
     for gt_file in tqdm(files):
@@ -428,6 +399,9 @@ def get_areas(gt_dir):
 
     
 def get_HW(gt_dir):
+    """
+    Compute height and width of all/difficult boxes in all images within passed annotations dir.
+    """
     files = os.listdir(gt_dir)
     all_areas, other_areas, difficult_areas = [], [], []
     for gt_file in tqdm(files):
@@ -452,6 +426,9 @@ def get_HW(gt_dir):
 
    
 def get_box_brightness(gt_dir, rgb_dir, thm_dir):
+    """
+    Get average LAB-space brightness of images within passed dir.
+    """
     files = os.listdir(gt_dir)
     all_areas, other_areas, difficult_areas = [], [], []
     full_image = []
@@ -488,9 +465,8 @@ def get_box_brightness(gt_dir, rgb_dir, thm_dir):
     return all_areas, other_areas, difficult_areas, full_image
 
 
-import skimage.color
 def get_brightness_by_date():
-
+    """ Save brightness of images by flight date to csv """
     def get_brightness(dir): 
         fnames = os.listdir(dir) 
         avg = []
@@ -514,14 +490,13 @@ def get_brightness_by_date():
     df.to_csv('plots/brightness.csv')
 
 def get_image_pairs():
-    # load image pairs
+    """ Load image pairs and plot specific ones -- only used once for creating a diagram """
     root = "D:/Cynthia_Data"
     dates = [d for d in os.listdir("D:/Cynthia_Data") if d.startswith('2022') and d not in ('2022_08_03', '2022_06_03', '2022_07_12') and 'test' not in d]
     
     all_image_pairs = []
 
-    for idx, date in enumerate(dates[1:]):
-
+    for _, date in enumerate(dates[1:]):
         try:
             rgb_img = skimage.io.imread(f'{root}/{date}/combined\opensfm\\undistorted\images_rgb\img_00100.jpeg.tif')
             thm_img = skimage.io.imread(f'{root}/{date}/combined\opensfm\\undistorted\images\img_00100.jpeg.tif')
@@ -529,20 +504,22 @@ def get_image_pairs():
             rgb_img = skimage.io.imread(f'{root}/{date}/combined\opensfm\\undistorted\images_rgb\img_00100.JPG.tif')
             thm_img = skimage.io.imread(f'{root}/{date}/combined\opensfm\\undistorted\images\img_00100.JPG.tif')
 
+        # get central region
         rgb_img = rgb_img[108:-108,61:-61,:]
         thm_img = thm_img[108:-108,61:-61]
 
+        # normalize
         def min_max_norm(x): return (x-np.amin(x)) / (np.amax(x) - np.amin(x))
         thm_img = min_max_norm(thm_img)
 
-
+        # store, and return after loop
         all_image_pairs.append([rgb_img, thm_img])
     return all_image_pairs
 
 
 
 def save_pseudo_labels(dir, save_dir_suff):
-    # deepforest model
+    """ Save Deepforest prediction on images within passed dir """
     model = main.deepforest()
     model.use_release()
     model.cuda()
@@ -553,10 +530,9 @@ def save_pseudo_labels(dir, save_dir_suff):
 
     # get image paths 
     fnames = [fname for fname in os.listdir(dir) if fname.endswith(".tif")]
-    # fnames = ['img_14.tif', 'img_15.tif', 'img_55.tif']
 
+    # output file for images with no predictions (barren)
     f = open("tree_less.txt", 'w')
-
 
     # get predictions
     for fname in tqdm(fnames):
@@ -571,20 +547,19 @@ def save_pseudo_labels(dir, save_dir_suff):
         bboxes = []
         for _, row in pred.iterrows():
             bboxes.append([int(row['xmin']), int(row['ymin']), int(row['xmax']), int(row['ymax'])])
-
         write_xml(dir, fname, bboxes, save_dir_suff)
 
     f.close()
 
 
 def convert_thermal_to_ubyte(thm_dir, save_dir):
+    """ Save thermal images (tiffs) as ubyte for plotting purposes """
     # make save dir
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
     # read filenames
     fnames = os.listdir(thm_dir)
-    # fnames = ['img_14.tif', 'img_15.tif', 'img_55.tif']
 
     # read, save as ubyte
     for fname in tqdm(fnames):
@@ -596,6 +571,7 @@ def convert_thermal_to_ubyte(thm_dir, save_dir):
 
         
 def remove_files_with_ext(dir, ext):
+    """ Utility to delete images from dir that end in .<ext> """
     fnames = os.listdir(dir)
     for fname in fnames:
         if ext in fname:
@@ -603,8 +579,9 @@ def remove_files_with_ext(dir, ext):
     
     print(f"Removed. Remaining: {len(os.listdir(dir))}")
     
+
 def plot_path(test_dir):
-    # load image names
+    """ Plot path of drone flight using GPS information"""
     gps_dir = f"D:/Cynthia_Data/2022_08_30/combined/images_rgb"
     test_imgs = os.listdir(test_dir)
     img_names_test = [fname for fname in os.listdir(gps_dir) if fname+'.tif' in test_imgs]
@@ -614,44 +591,46 @@ def plot_path(test_dir):
     xs_test, ys_test = [],[]
 
     # read exifs (height, width, aperture size, altitude, gps)
-    # for name in (pbar:=tqdm(img_names, leave=False)): 
-    #     # extract exif info to a temp file
-    #     call = f"exiftool -a {gps_dir}/{name} > ./exif_tmp.txt"
-    #     os.system(call)
-    #     exif_dict = {}
-    #     with open(f"exif_tmp.txt", 'r') as f:
-    #         lines = f.readlines()
-    #         for line in lines:
-    #             line = line.split(':')
-    #             key = line[0].strip()
-    #             val = line[1].strip()
-    #             exif_dict[key] = val
+    for name in (pbar:=tqdm(img_names, leave=False)): 
+        # extract exif info to a temp file
+        call = f"exiftool -a {gps_dir}/{name} > ./exif_tmp.txt"
+        os.system(call)
+        exif_dict = {}
+        with open(f"exif_tmp.txt", 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.split(':')
+                key = line[0].strip()
+                val = line[1].strip()
+                exif_dict[key] = val
 
-    #     # GPS from LRF values directly
-    #     lat = exif_dict["GPS Latitude"].split(" ")
-    #     lon = exif_dict["GPS Longitude"].split(" ")
+        # GPS from LRF values directly
+        lat = exif_dict["GPS Latitude"].split(" ")
+        lon = exif_dict["GPS Longitude"].split(" ")
 
-    #     lat_dec = float(lat[0]) + float(lat[2][:-1])/60 + float(lat[3][:-2])/3600
-    #     lon_dec = -(float(lon[0]) + float(lon[2][:-1])/60 + float(lon[3][:-2])/3600)
+        lat_dec = float(lat[0]) + float(lat[2][:-1])/60 + float(lat[3][:-2])/3600
+        lon_dec = -(float(lon[0]) + float(lon[2][:-1])/60 + float(lon[3][:-2])/3600)
 
-    #     # convert lat,long to UTM (Lines 5 & 6)
-    #     easting, northing, _, _ = utm.from_latlon(lat_dec, lon_dec)
-    #     if name in img_names_test:
-    #         xs_test.append(easting)
-    #         ys_test.append(northing)
-    #     else:
-    #         xs.append(easting)
-    #         ys.append(northing)
+        # convert lat,long to UTM (Lines 5 & 6)
+        easting, northing, _, _ = utm.from_latlon(lat_dec, lon_dec)
+        if name in img_names_test:
+            xs_test.append(easting)
+            ys_test.append(northing)
+        else:
+            xs.append(easting)
+            ys.append(northing)
 
     # print(xs,ys)
     save_dir = './plots/data_split_points'
-    # if not os.path.exists(save_dir):
-    #     os.makedirs(save_dir)
-    # np.savetxt(save_dir+'/xs.txt', np.array(xs))
-    # np.savetxt(save_dir+'/ys.txt', np.array(ys))
-    # np.savetxt(save_dir+'/xs_test.txt', np.array(xs_test))
-    # np.savetxt(save_dir+'/ys_test.txt', np.array(ys_test))
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    np.savetxt(save_dir+'/xs.txt', np.array(xs))
+    np.savetxt(save_dir+'/ys.txt', np.array(ys))
+    np.savetxt(save_dir+'/xs_test.txt', np.array(xs_test))
+    np.savetxt(save_dir+'/ys_test.txt', np.array(ys_test))
 
+
+    # NOTE: to save time, can skip to this loading step if need to repeat this function
     xs = list(np.loadtxt(save_dir+'/xs.txt'))
     ys = list(np.loadtxt(save_dir+'/ys.txt'))
     xs_test = list(np.loadtxt(save_dir+'/xs_test.txt'))
@@ -665,13 +644,7 @@ def plot_path(test_dir):
         ys_val.append(i)
         ys.remove(i)
 
-    
-
-
-
-    
-
-
+    # plot
     plt.plot(xs, ys, '.', color = 'orange', label=f'Training')
     plt.plot(xs_test[::3], ys_test[::3], '+', color='teal', label=f'Testing')
     plt.plot(xs_val[::3], ys_val[::3], 'x', color="purple", label='Validation')
@@ -681,12 +654,11 @@ def plot_path(test_dir):
     plt.ylabel('Northing (meters)')
     plt.title('GPS-based Data Split for August 30 Flight')
     plt.legend()
-    # plt.subplots_adjust(left=20, bottom=0, right=1, top=1, wspace=0, hspace=0)
-    # plt.show()
     plt.savefig('./plots/data_split.pdf', bbox_inches='tight')
 
 
 def save_binary_masks(img_dir, save_dir):
+    """ Save binary masks of images (using function in ./threshold.py) into save_dir """
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
 
@@ -695,13 +667,10 @@ def save_binary_masks(img_dir, save_dir):
         path = f'{img_dir}/{fname}'
         image = skimage.io.imread(path, as_gray=True)
         binary = torch.tensor(get_mask(image))
-        # plt.subplot(121), plt.imshow(binary)
-        # plt.subplot(122), plt.imshow(image)
-        # plt.show()
-        # exit()
         torch.save(binary, f'{save_dir}/{fname}.pt')
 
 def save_binary_masks_boxes(ann_dir, save_dir, size=(500,500)):
+    """ Save binary masks of images (using Deepforest-predicted boxes as FG, rest as BG) into save_dir """
     # 2. load pseudo boxes and construct mask
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
@@ -721,10 +690,13 @@ def save_binary_masks_boxes(ann_dir, save_dir, size=(500,500)):
             mask[ymin:ymax, xmin:xmax] = True
         torch.save(mask, f'{save_dir}/{gt_file}.pt')
 
-    
 
 
 def save_weighted_boxes(dir, save_dir_suff):
+    """ 
+    Save binary masks of images (using Deepforest-predicted boxes as FG, rest as BG) into save_dir 
+    This time, the masks are weighted in a Gaussian manner with the mean at the center. 
+    """
     # deepforest model
     model = main.deepforest()
     model.use_release()
@@ -739,7 +711,6 @@ def save_weighted_boxes(dir, save_dir_suff):
     # fnames = ['img_14.tif', 'img_15.tif', 'img_55.tif']
 
     f = open("tree_less.txt", 'w')
-
 
     # get predictions
     for fname in tqdm(fnames):
@@ -762,13 +733,13 @@ def save_weighted_boxes(dir, save_dir_suff):
     f.close()
 
 def copy_every_nth_image_and_labels(n = 24):
+    """ Make a copy of every nth image in the source directories to the target directories (hardcoded) """
     img_dir = 'data/train/rgb'
     lbl_dir = 'data/train/pseudo_annotations'
     new_img_dir = 'data/train/rgb_sub'
     new_lbl_dir = 'data/train/gt_annotations_sub'
     thm_dir = 'data/train/thermal'
     new_thm_dir = 'data/train/thermal_sub'
-
 
     try:
         os.makedirs(new_img_dir)
@@ -779,7 +750,6 @@ def copy_every_nth_image_and_labels(n = 24):
     img_names = os.listdir(img_dir)
     lbl_names = os.listdir(lbl_dir)
 
-
     for i in tqdm(range(0,len(img_names),n)):
         shutil.copyfile(f'{img_dir}/{img_names[i]}', f'{new_img_dir}/{img_names[i]}')
         shutil.copyfile(f'{thm_dir}/{img_names[i]}', f'{new_thm_dir}/{img_names[i]}')
@@ -787,6 +757,7 @@ def copy_every_nth_image_and_labels(n = 24):
 
 
 def add_missing():
+    """ Add missing images in target directories from source directories (hardcoded) """
     lbl_dir = 'data/train/pseudo_annotations'
     new_img_dir = 'data/train/rgb_sub'
     new_lbl_dir = 'data/train/gt_annotations_sub'
@@ -802,38 +773,16 @@ def add_missing():
             shutil.copyfile(src, dst)
 
 
-
-def move_rgbt_acc_to_GT(rgb_dir, thm_dir, gt_dir):
-    names = [fname.split('.')[0] for fname in os.listdir(gt_dir)]
-    
-    rgb_save_dir = 'data/subset/train/rgb'
-    thm_save_dir = 'data/subset/train/thermal'
-    try: os.makedirs(rgb_save_dir), os.makedirs(thm_save_dir)
-    except: pass
-
-    for name in tqdm(names):
-        src = f'{rgb_dir}/{name}.tif'
-        dst = f'{rgb_save_dir}/{name}.png'
-        shutil.copyfile(src, dst)
-
-        src = f'{thm_dir}/{name}.tif'
-        dst = f'{thm_save_dir}/{name}.png'
-        thm_img = skimage.io.imread(src)
-        thm_img = np.stack([thm_img]*3, axis=2)
-        skimage.io.imsave(dst, thm_img)
-
-
-
 def convert_gt_to_DF_compatible(gt_dir, out_path=None):
-
+    """ Convert GT annotations to a format compatible with Deepforest """
+    # get fnames
     fnames = os.listdir(gt_dir)
 
+    # output path
     if out_path is None:
         out_path = 'data/subset/annotations.csv'
 
     with open(out_path, 'w') as f:
-        # f.write("image_path, xmin, ymin, xmax, ymax, label\n")
-
         for gt_file in tqdm(fnames):
             tree = ET.parse(f'{gt_dir}/{gt_file}')
             root = tree.getroot()
@@ -847,84 +796,11 @@ def convert_gt_to_DF_compatible(gt_dir, out_path=None):
                 name = gt_file.split('.')[0]+'.png'
                 if xmax > xmin and ymax > ymin:
                     f.write(f"{name}, {xmin}, {ymin}, {xmax}, {ymax},Tree\n")
-
     
     df = pandas.read_csv(out_path)
     df.columns = ["image_path", "xmin", "ymin", "xmax", "ymax", "label"]
     df.to_csv(out_path, index=False)
     
 
-
-
-
-if __name__ == "__main__":
-    pass
-
-    dates = [d for d in os.listdir("D:/Cynthia_Data") if d.startswith('2022') and d not in ('2022_08_03', '2022_06_03', '2022_07_12') and 'test' not in d]
-    total = 0
-    tot = 0
-    for date in (pbar := tqdm(dates[1:16])):
-        train_set, test_set = split_based_on_GPS(date)
-        tot += len(train_set)+len(test_set)
-        total += 6*(max(0,len(train_set)-40))
-        print("\n", date,  len(train_set)+len(test_set), 6*(len(train_set)-40))
-    print(tot, total)
-    exit()
-
-    # date = '2022_08_30'
-    # train_set, test_set = split_based_on_GPS(date)
-    #     # tot += len(train_set)+len(test_set)
-    #     # total += 6*len(train_set)
-    # print("\n", date,  len(train_set)+len(test_set), 6*len(train_set))
-    # exit()
-        
-    # move_images('2022_08_30', None, test_set)
-
-    # dates = [d for d in os.listdir("D:/Cynthia_Data") if d.startswith('2022') and d not in ('2022_08_03', '2022_06_03', '2022_07_12')]
-    # for date in (pbar := tqdm(dates[6:])):
-    #     train_set, test_set = split_based_on_GPS(date)
-    #     print(len(train_set), len(test_set))
-    #     move_images(date, train_set, test_set)
-
-    # crop_test_data(rgb_outdir='data/test/rgb_2', p=500)
-    # crop_single_test_image('data/test/all/rgb/img_00040.JPG.tif', 'data/test/rgb/img_14.tif')
-    # crop_single_test_image('data/test/all/rgb/img_00043.JPG.tif', 'data/test/rgb/img_15.tif')
-    # crop_single_test_image('data/test/all/rgb/img_00163.JPG.tif', 'data/test/rgb/img_55.tif')
-    # crop_single_test_image('data/test/all/thermal/img_00040.JPG.tif', 'data/test/thermal/img_14.tif')
-    # crop_single_test_image('data/test/all/thermal/img_00043.JPG.tif', 'data/test/thermal/img_15.tif')
-    # crop_single_test_image('data/test/all/thermal/img_00163.JPG.tif', 'data/test/thermal/img_55.tif')
-
-
-    # dates = [d for d in os.listdir("D:/Cynthia_Data") if d.startswith('2022') and d not in ('2022_08_03', '2022_06_03', '2022_07_12', '2022_08_30_test')]
-    # for date in (pbar := tqdm(dates[3:])):
-    #     patchify_train_data(date)
-
-    # rename_test_imgs()
-    # remove_files_with_ext('data/test/gt_annotations', 'JPG')
-    # remove_files_with_ext('data/test/thermal', 'JPG')
-
-    # save_pseudo_labels('data/test/rgb',  'pseudo_annotations')
-    # save_pseudo_labels('data/train/rgb', 'pseudo_annotations')
-
-    # convert_thermal_to_ubyte('data/train/thermal', 'data/train/thermal_byte')
-    
-
-    # plot_path('data/test/all/rgb')
-    # count_difficult('data/test/gt_annotations_new')
-    save_binary_masks('data/val/rgb', 'data/val/masks(10,125)')
-    # save_binary_masks_boxes('data/test/pseudo_annotations', 'data/test/masks_boxes')
-
-    # copy_every_nth_image_and_labels()
-    # convert_thermal_to_ubyte('data/test/thermal', 'data/test/thermal_byte')
-
-    # add_missing()
-
-    # save_weighted_boxes('data/train/rgb', 'masks_weighted_boxes')
-
-
-    # save_gt_only_difficult('data/test/gt_annotations_new', 'data/test/gt_annotations_difficult')
-
-    # move_rgbt_acc_to_GT('data/train/rgb', 'data/train/thermal_byte', 'data/subset/train/gt_annotations')
-    # convert_gt_to_DF_compatible('data/subset/train/gt_annotations')
 
 
