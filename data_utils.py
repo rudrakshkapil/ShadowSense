@@ -1,23 +1,27 @@
 """ 
-Script implementing utility functions for data preprocessing and handling
+Script implementing various utility functions for data preprocessing and handling.
 Should not be needed, since the final output of all of these is RT-Trees, already provided
+But you may find it a useful reference for preprocessing your own data and 
+for descriptive stats of RT-Trees. 
 """
 
 from utm_converter import utm
 import os
-from tqdm import tqdm
 import shutil
-import random
-import skimage.io
 import pandas
-import matplotlib.pyplot as plt
-from df_repo.deepforest import main
-from skimage.util import img_as_float, img_as_ubyte
 import numpy as np
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+
+import torch
+import skimage.io
+from skimage.util import img_as_ubyte
+
 from xml.etree.ElementTree import Element, SubElement, ElementTree
 import xml.etree.ElementTree as ET
+
+from df_repo.deepforest import main
 from threshold import get_mask
-import torch
 
 def split_based_on_GPS(date, cutoff = (607840, 5907125)):
     '''
@@ -33,24 +37,23 @@ def split_based_on_GPS(date, cutoff = (607840, 5907125)):
     test_set = []
 
     # NOTE: need exiftool installed
-    if '08_30' not in date:
-        call = f"exiftool -a {gps_dir} -ext jpeg > exif_tmp.txt"
-    else:
-        call = f"exiftool -a {gps_dir} -ext jpg > exif_tmp.txt"
-    os.system(call)
+    try:
+        if '08_30' not in date:
+            call = f"exiftool -a {gps_dir} -ext jpeg > exif_tmp.txt"
+        else:
+            call = f"exiftool -a {gps_dir} -ext jpg > exif_tmp.txt"
+        os.system(call)
+    except Exception as e:
+        raise Exception("Exiftool not found, so can't split data based on GPS location!")
 
     def divide_chunks(l, n):
         for i in range(0, len(l), n): 
             yield l[i+1:i + n]
-    
 
     with open(f"exif_tmp.txt", 'r') as f:
         lines = f.readlines()[:-2]
         len_ = len(lines)
         chunked_lines = list(divide_chunks(lines, 117))
-
-        # TODO: get names properly later
-        # names = [i for i in range(0,len(len_),118)]
 
 
     i = 0
@@ -79,8 +82,7 @@ def split_based_on_GPS(date, cutoff = (607840, 5907125)):
         i += 1
         if northing > cutoff[1] and easting < cutoff[0]:
             test_set.append(name)
-        else:
-            train_set.append(name)
+        else: train_set.append(name)
 
     return train_set, test_set
 
@@ -88,7 +90,7 @@ def split_based_on_GPS(date, cutoff = (607840, 5907125)):
 def move_images(date, train_set, test_set):
     '''
     Move images from D:/Cynthia_Data to ./data
-    Does it separately for splits and 
+    Does it separately for splits and modes
     '''
 
     # get source directories for given date
@@ -101,10 +103,27 @@ def move_images(date, train_set, test_set):
     thm_train_opd = f'./data/train/all/{date}/thermal/'
     thm_test_opd  = f'./data/test/all/thermal_geo'
     try:
-        # os.makedirs(rgb_train_opd), os.makedirs(thm_train_opd) # NOTE: put back this and 'loop over trai...'
+        os.makedirs(rgb_train_opd), os.makedirs(thm_train_opd) 
         if date == '2022_08_30':
             os.makedirs(rgb_test_opd), os.makedirs(thm_test_opd)
     except: pass
+
+    # move training set images
+    for name in tqdm(train_set):
+        rgb_src_path = f'{rgb_src_dir}/{name}.tif'
+        thm_src_path = f'{thm_src_dir}/{name}.tif'
+
+        shutil.copy(rgb_src_path, rgb_train_opd)
+        shutil.copy(thm_src_path, thm_train_opd)
+
+        # add exif information if exiftool present
+        try:
+            call = f"exiftool -tagsfromfile {rgb_src_path} \"-exif:all>exif:all\" {rgb_test_opd}/{name} >> exif_log.txt 2>&1" # pipe stderr (2) andstdout (1) to output file
+            os.system(call)
+            call = f"exiftool -tagsfromfile {thm_src_path} \"-exif:all>exif:all\" {thm_test_opd}/{name} >> exif_log.txt 2>&1" # pipe stderr (2) andstdout (1) to output file
+            os.system(call)
+        except:
+            print("[Optional] Exiftool not found, skipping copying of exif info during move_images()")
 
     # for test set, only move 2022_08_30 images
     if date == '2022_08_30':
@@ -115,12 +134,14 @@ def move_images(date, train_set, test_set):
             shutil.copy(rgb_src_path, rgb_test_opd)
             shutil.copy(thm_src_path, thm_test_opd)
 
-            # NOTE: added for geo
-            call = f"exiftool -tagsfromfile {rgb_src_path} \"-exif:all>exif:all\" {rgb_test_opd}/{name} >> exif_log.txt 2>&1" # pipe stderr (2) andstdout (1) to output file
-            os.system(call)
-
-            call = f"exiftool -tagsfromfile {thm_src_path} \"-exif:all>exif:all\" {thm_test_opd}/{name} >> exif_log.txt 2>&1" # pipe stderr (2) andstdout (1) to output file
-            os.system(call)
+            # add exif information if exiftool present
+            try:
+                call = f"exiftool -tagsfromfile {rgb_src_path} \"-exif:all>exif:all\" {rgb_test_opd}/{name} >> exif_log.txt 2>&1" # pipe stderr (2) andstdout (1) to output file
+                os.system(call)
+                call = f"exiftool -tagsfromfile {thm_src_path} \"-exif:all>exif:all\" {thm_test_opd}/{name} >> exif_log.txt 2>&1" # pipe stderr (2) andstdout (1) to output file
+                os.system(call)
+            except:
+                print("[Optional] Exiftool not found, skipping copying of exif info during move_images()")
 
 
 def crop_single_test_image(src_path, dst_path, p=500):
@@ -139,34 +160,17 @@ def crop_test_data(rgb_dir = f'data/test/all/rgb', rgb_outdir = f'data/test/rgb'
     try: os.makedirs(rgb_outdir)
     except: pass
 
-    x = 1
-    for idx,path in enumerate(paths[0:len(fnames):x]):
-        plt.subplot(1,5,idx+1)
-        img = skimage.io.imread(path)
-        h,w,_ = img.shape
-
-        patch = img[h//2-p//2:h//2+p//2, w//2-p//2:+w//2+p//2]
-        plt.imshow(patch)
-        if idx == 4:
-            break
-
-    plt.show()
-    exit()
+    # sample every third image, crop its center, and save to rgb_outdir
     x = 3
     for idx,path in enumerate(paths[0:len(fnames):x]):
-        # plt.subplot(2,5,idx+1)
         img = skimage.io.imread(path)
         h,w,_ = img.shape
 
         patch = img[h//2-p//2:h//2+p//2, w//2-p//2:+w//2+p//2]
-        # patch = model.predict_image(image=patch, return_plot=True)
-        # print(patch)
-        # exit()
-
         skimage.io.imsave(f'{rgb_outdir}/{fnames[idx*3]}', patch)
 
+    # do the same for thermal if needed
     if do_thermal:
-
         thm_dir = f'data/test/all/thermal'
         fnames = os.listdir(thm_dir)
         paths = [f'{thm_dir}/{fname}' for fname in fnames]
@@ -176,7 +180,6 @@ def crop_test_data(rgb_dir = f'data/test/all/rgb', rgb_outdir = f'data/test/rgb'
         except: pass
         
         for idx,path in enumerate(paths[0:len(fnames):x]):
-            # plt.subplot(2,5,idx+1)
             img = skimage.io.imread(path)
             h,w = img.shape
 
@@ -370,7 +373,6 @@ def count_difficult(gt_dir):
         
     print(f"Total Difficult in {len(files)} images => {count}/{total}")
     return count, total, l1, l2
-
        
 
 def get_areas(gt_dir):
@@ -489,6 +491,7 @@ def get_brightness_by_date():
         df = pandas.concat([df, d_])
     df.to_csv('plots/brightness.csv')
 
+
 def get_image_pairs():
     """ Load image pairs and plot specific ones -- only used once for creating a diagram """
     root = "D:/Cynthia_Data"
@@ -515,7 +518,6 @@ def get_image_pairs():
         # store, and return after loop
         all_image_pairs.append([rgb_img, thm_img])
     return all_image_pairs
-
 
 
 def save_pseudo_labels(dir, save_dir_suff):
@@ -669,6 +671,7 @@ def save_binary_masks(img_dir, save_dir):
         binary = torch.tensor(get_mask(image))
         torch.save(binary, f'{save_dir}/{fname}.pt')
 
+
 def save_binary_masks_boxes(ann_dir, save_dir, size=(500,500)):
     """ Save binary masks of images (using Deepforest-predicted boxes as FG, rest as BG) into save_dir """
     # 2. load pseudo boxes and construct mask
@@ -689,7 +692,6 @@ def save_binary_masks_boxes(ann_dir, save_dir, size=(500,500)):
             ymax = int(obj[4][3].text)
             mask[ymin:ymax, xmin:xmax] = True
         torch.save(mask, f'{save_dir}/{gt_file}.pt')
-
 
 
 def save_weighted_boxes(dir, save_dir_suff):
@@ -731,6 +733,7 @@ def save_weighted_boxes(dir, save_dir_suff):
         torch.save(mask, f'{save_dir}/{fname.split(".")[0]}.xml.pt')
 
     f.close()
+
 
 def copy_every_nth_image_and_labels(n = 24):
     """ Make a copy of every nth image in the source directories to the target directories (hardcoded) """
