@@ -10,6 +10,8 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from tqdm import tqdm
 
+from threshold import get_mask
+
 class RGBxThermalTreeCrownDataset(Dataset):
     """ Data loader for RGBxThermal images, in pascal VOC format """
 
@@ -17,19 +19,18 @@ class RGBxThermalTreeCrownDataset(Dataset):
         self.split = split
 
         # define directories
-        self.rgb_dir = f"{root}/{split}/rgb" #
+        self.rgb_dir = f"{root}/{split}/rgb" 
         self.thm_dir = f"{root}/{split}/thermal"
-        lbl_dir = 'pseudo_annotations' if split == 'train' else 'gt_annotations' # TODO: 2 => pseudo labels, without => gt
-        self.lbl_dir = f"{root}/{split}/{lbl_dir}"
         self.mask_dir = f"{root}/{split}/{masks_dir}"
-        self.mask_weights_dir = f'{root}/{split}/masks_weighted_boxes'
 
         # get filenames (without prefix)
         self.img_names = os.listdir(self.rgb_dir)
         self.thm_img_names = os.listdir(self.thm_dir)
-        self.label_names = os.listdir(self.lbl_dir)
-        self.mask_names = os.listdir(self.mask_dir)
 
+        # if masks have been precomputed, just load their names, else call threshold.py during __geitem__
+        self.precomputed_masks = os.path.exists(self.mask_dir)
+        if self.precomputed_masks:
+            self.mask_names = os.listdir(self.mask_dir)
 
         # default transform (just convert to Tensor) -- normalization done in RetinaNet itself, so not needed here
         self.rgb_tform = transforms.Compose([transforms.ToTensor(),])
@@ -44,13 +45,14 @@ class RGBxThermalTreeCrownDataset(Dataset):
         rgb_img = io.imread(f'{self.rgb_dir}/{self.img_names[index]}')
         thm_img = io.imread(f'{self.thm_dir}/{self.thm_img_names[index]}') # NOTE: change!
 
-        # get mask (morphologically determined mask, OR based on pseudo boxes)
-        mask = torch.load(f'{self.mask_dir}/{self.mask_names[index]}')
+        # either load mask if precomputed or generate now (leads to slower training)
+        if self.precomputed_masks:
+            mask = torch.load(f'{self.mask_dir}/{self.mask_names[index]}')
+        else: mask = get_mask(rgb_img)
 
-        # apply transforms
+        # apply transforms and return
         rgb_img = self.rgb_tform(rgb_img)
         thm_img = self.thm_tform(thm_img)
-
         return rgb_img, thm_img, mask
     
 

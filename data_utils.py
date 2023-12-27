@@ -3,6 +3,8 @@ Script implementing various utility functions for data preprocessing and handlin
 Should not be needed, since the final output of all of these is RT-Trees, already provided
 But you may find it a useful reference for preprocessing your own data and 
 for descriptive stats of RT-Trees. 
+
+NOTE: some of these functions assume exiftool is installed on your machine (in your PATH variable)
 """
 
 from utm_converter import utm
