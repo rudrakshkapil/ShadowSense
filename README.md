@@ -90,7 +90,7 @@ The training flow is programmed in `train.py`. Begin training with the following
 python train.py
 ```
 <p align="center">
-   <img src="images/workflow.png" alt="Training workflow" width="300"/>
+   <img src="images/workflow.png" alt="Training workflow" width="900"/>
 </p>
 
 
