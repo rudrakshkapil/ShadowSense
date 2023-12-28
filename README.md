@@ -4,4 +4,12 @@ This is the official code repository for the paper titled above, accepted into t
 
 
 
- 
+ ### Installation Instrcutions
+1. ```
+   git clone https://github.com/rudrakshkapil/ShadowSense
+   cd ShadowSense
+   ```
+
+2. ```
+
+   ```
