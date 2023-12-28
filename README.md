@@ -10,6 +10,10 @@ This is the official code repository for the paper titled above, accepted into t
 
 
 
+
+
+
+
 ### Running on your own machine
 1. Clone and enter repository
    ```Shell
@@ -83,7 +87,10 @@ The training flow is programmed in `train.py`. Begin training with the following
 python train.py
 ```
 
-The evaluation metrics used are implemented in []().
+<img src="images/training.png" alt="Training workflow" width="300"/>
+
+
+The evaluation metrics used are implemented in this great repo: [Open-Source Visual Interface for Object Detection Metrics](https://github.com/rafaelpadilla/review_object_detection_metrics).
 
 
 ### Citation
