@@ -86,8 +86,9 @@ The training flow is programmed in `train.py`. Begin training with the following
 ```Python
 python train.py
 ```
-
-<img src="images/training.png" alt="Training workflow" width="300"/>
+<p align="center">
+   <img src="images/training.png" alt="Training workflow" width="300"/>
+</p>
 
 
 The evaluation metrics used are implemented in this great repo: [Open-Source Visual Interface for Object Detection Metrics](https://github.com/rafaelpadilla/review_object_detection_metrics).
