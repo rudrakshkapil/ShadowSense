@@ -36,13 +36,23 @@ This is the official code repository for the paper titled above, accepted into t
 ##### Download
 The dataset can be download from [this Google Drive link](https://drive.google.com/drive/folders/1cCeA7TPA7qsII1-xOxs19sXTkRMV0fsl?usp=drive_link). Training, validation, and testing images for the Individual Tree Crown Detection task with RGB-thermal multi-modal drone imagery are provided. This dataset is primarily meant for self-supervised training, with ground truth annotations available for only the validation and testing sets. 
 
-Four zip files are provided, one for each of train/validation/test, and the fourth for a labellled subset of the training images, useful for comparison with supervised fine-tuning experiments. 
-
-Each split of the dataset also contains pre-computed masks for every RGB-thermal pair, obtained using watershed segmentation & morpohological operations as described in the paper and implemented in `threshold,.py`.
+14 drone flights with a DJI H20T sensor were conducted from July to November 2022. In each, ~800 image pairs (RGB & thermal) were captured in total, and the images were geographically divided into train/val/test sets using GPS. The original image pairs have been cropped to 2000x2000 px. Overlap was retained in training images but removed in the evaluation sets, hence the apparent size disparity.
 
 
+| Split      | # Image Pairs | Size    |
+| :---        |    :----:   |          :---: |
+| Train      | 49806       | 70 GB   |
+| Validation      | 10       | 16 MB   |
+| Testing      | 63       | 250 MB   |
 
-**Note**: More information regarding RT-Trees can be found in the [supplementary material](https://rudrakshkapil.com/resources/publications/wacv_supplementary.pdf) of the paper. 
+
+Note:
+   1. Four zip files are provided, one for each of train/validation/test, and the fourth for a labellled subset of the training images, useful for comparison with supervised fine-tuning experiments. 
+
+   2. Each split of the dataset also contains pre-computed masks for every RGB-thermal pair, obtained using watershed segmentation & morpohological operations as described in the paper and implemented in `threshold,.py`.
+
+
+More information regarding RT-Trees can be found in the [supplementary material](https://rudrakshkapil.com/resources/publications/wacv_supplementary.pdf) of the paper. 
 
 
 ##### Organization
