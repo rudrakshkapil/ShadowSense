@@ -4,12 +4,21 @@ This is the official code repository for the paper titled above, accepted into t
 
 
 
- ### Installation Instrcutions
-1. ```
+ ### Running on your own machine
+1. Clone and enter repository
+   ```
    git clone https://github.com/rudrakshkapil/ShadowSense
    cd ShadowSense
    ```
+   
+2. Create a conda environment for this repo (Python 3.8.13 recommended version)
+   ```git
+   conda create --name shadowsense python=3.8.13
+   ```
+   
+3. Install PyTorch from [here](https://pytorch.org/get-started/locally/). 
 
-2. ```
-
+4. Install other required packages with pip
+   ```bash
+   pip install requirements.txt
    ```
