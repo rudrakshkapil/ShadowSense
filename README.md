@@ -34,11 +34,15 @@ This is the official code repository for the paper titled above, accepted into t
 ### RT-Trees Dataset
 
 ##### Download
-The dataset can be download from [this Google Drive link](https://drive.google.com/drive/folders/1cCeA7TPA7qsII1-xOxs19sXTkRMV0fsl?usp=drive_link). Training, validation, and testing images for the Individual Tree Crown Detection task with RGB-thermal multi-modal drone imagery are provided. This dataset is primarily meant for self-supervised training, with ground truth annotations available for the validation and testing sets. 
+The dataset can be download from [this Google Drive link](https://drive.google.com/drive/folders/1cCeA7TPA7qsII1-xOxs19sXTkRMV0fsl?usp=drive_link). Training, validation, and testing images for the Individual Tree Crown Detection task with RGB-thermal multi-modal drone imagery are provided. This dataset is primarily meant for self-supervised training, with ground truth annotations available for only the validation and testing sets. 
 
-Note that four zip files are provided, one for each of train/validation/test, and the fourth for a labellled subset of the training images, useful for comparison with supervised fine-tuning experiments. 
+Four zip files are provided, one for each of train/validation/test, and the fourth for a labellled subset of the training images, useful for comparison with supervised fine-tuning experiments. 
 
 Each split of the dataset also contains pre-computed masks for every RGB-thermal pair, obtained using watershed segmentation & morpohological operations as described in the paper and implemented in `threshold,.py`.
+
+
+
+**Note**: More information regarding RT-Trees can be found in the [supplementary material](https://rudrakshkapil.com/resources/publications/wacv_supplementary.pdf) of the paper. 
 
 
 ##### Organization
