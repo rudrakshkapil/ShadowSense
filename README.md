@@ -11,7 +11,7 @@ This is the official code repository for the paper titled above, accepted into t
 
 
 <p align="center">
-   <img src="images/challenge.png" alt="Training workflow" width="750"/>
+   <img src="images/challenge.png" alt="Training workflow" width="70%"/>
 </p>
 
 
