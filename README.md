@@ -1,10 +1,16 @@
 # ShadowSense: Unsupervised Domain Adaptation and Feature Fusion for Shadow-Agnostic Tree Crown Detection from RGB-Thermal Drone Imagery
-This is the official code repository for the paper titled above, accepted into the main conference at WACV 2024! It will be available on CVF following the conference on Jan 4-8, 2024, but for now please refer to the [ArXiv pre-print version](https://arxiv.org/abs/2310.16212). 
+\[Under construction...\]
+
+
+
+This is the official code repository for the paper titled above, accepted into the main conference at WACV 2024! It will be available on CVF following the conference on Jan 4-8, 2024, but for now, please refer to the [ArXiv pre-print version](https://arxiv.org/abs/2310.16212). 
 
 
 
 
- ### Running on your own machine
+
+
+### Running on your own machine
 1. Clone and enter repository
    ```Shell
    git clone https://github.com/rudrakshkapil/ShadowSense
@@ -22,3 +28,46 @@ This is the official code repository for the paper titled above, accepted into t
    ```Shell
    pip install requirements.txt
    ```
+
+
+
+### RT-Trees Dataset
+
+##### Download
+The dataset can be download from [this Google Drive link](https://drive.google.com/drive/folders/1cCeA7TPA7qsII1-xOxs19sXTkRMV0fsl?usp=drive_link). Training, validation, and testing images for the Individual Tree Crown Detection task with RGB-thermal multi-modal drone imagery are provided. This dataset is primarily meant for self-supervised training, with ground truth annotations available for the validation and testing sets. 
+
+Note that four zip files are provided, one for each of train/validation/test, and the fourth for a labellled subset of the training images, useful for comparison with supervised fine-tuning experiments. 
+
+
+##### Organization
+The training script expects the data to be formatted in the following way
+```
+ShadowSense
++––– data
+   +––– train
+      +––– rgb
+      +––– thermal
+      +––– masks
+   +––– test
+                   +––– rgb
+                   +––– thermal
+                   +––– masks
+            +––– train
+
+
+```
+
+
+
+
+### Training
+The training flow is programmed in `train.py`. Begin training with the following command.
+```Python
+python train.py
+```
+
+
+### Citation
+If you found this work useful, please consider citing the arxiv paper – [arXiv:2310.16212](https://arxiv.org/abs/2310.16212) :)
+Once the CVF version is available, the bibtex will be included here. 
+
