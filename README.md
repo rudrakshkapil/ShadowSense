@@ -8,7 +8,7 @@ This is the official code repository for the paper titled above, accepted into t
 
 
 <p align="center">
-   <img src="images/challenge.png" alt="Training workflow" width="60%"/>
+   <img src="images/challenge.png" alt="Training workflow" width="55%"/>
 </p>
 
 
@@ -87,7 +87,7 @@ The training flow is programmed in `train.py`. Begin training with the following
 python train.py
 ```
 <p align="center">
-   <img src="images/workflow.png" alt="Training workflow" width="900"/>
+   <img src="images/workflow.png" alt="Training workflow" width="80%"/>
 </p>
 
 
