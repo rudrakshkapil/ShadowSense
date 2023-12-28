@@ -38,26 +38,29 @@ The dataset can be download from [this Google Drive link](https://drive.google.c
 
 Note that four zip files are provided, one for each of train/validation/test, and the fourth for a labellled subset of the training images, useful for comparison with supervised fine-tuning experiments. 
 
+Each split of the dataset also contains pre-computed masks for every RGB-thermal pair, obtained using watershed segmentation & morpohological operations as described in the paper and implemented in `threshold,.py`.
+
 
 ##### Organization
-The training script expects the data to be formatted in the following way
+The training script for the proposed self-supervised approach expects the data to be formatted in the following way
 ```
 ShadowSense
-+––– data
-   +––– train
+|––– data
+   |––– train
       +––– rgb
       +––– thermal
       +––– masks
-   +––– test
-                   +––– rgb
-                   +––– thermal
-                   +––– masks
-            +––– train
-
-
+   |––– test
+      +––– rgb
+      +––– thermal
+      +––– masks
+      +––– gt_annotations
+   |––– val
+      +––– rgb
+      +––– thermal
+      +––– masks
+      +––– gt_annotations
 ```
-
-
 
 
 ### Training
@@ -65,6 +68,8 @@ The training flow is programmed in `train.py`. Begin training with the following
 ```Python
 python train.py
 ```
+
+The evaluation metrics used are implemented in []().
 
 
 ### Citation
