@@ -3,14 +3,19 @@
 
 
 
+
+
 This is the official code repository for the paper titled above, accepted into the main conference at WACV 2024! It will be available on CVF following the conference on Jan 4-8, 2024, but for now, please refer to the [ArXiv pre-print version](https://arxiv.org/abs/2310.16212). 
 
 
 
 
+<p align="center">
+   <img src="images/challenge.png" alt="Training workflow" width="300"/>
+</p>
 
 
-
+**Abstract:** Accurate detection of individual tree crowns from remote sensing data poses a significant challenge due to the dense nature of forest canopy and the presence of diverse environmental variations, e.g., overlapping canopies, occlusions, and varying lighting conditions. Additionally, the lack of data for training robust models adds another limitation in effectively studying complex forest conditions. This paper presents a novel method for detecting shadowed tree crowns and provides a challenging dataset comprising roughly 50k paired RGB-thermal images to facilitate future research for illumination-invariant detection. The proposed method (ShadowSense) is entirely self-supervised, leveraging domain adversarial training without source domain annotations for feature extraction and foreground feature alignment for feature pyramid networks to adapt domain-invariant representations by focusing on visible foreground regions, respectively. It then fuses complementary information of both modalities to effectively improve upon the predictions of an RGB-trained detector and boost the overall accuracy. Extensive experiments demonstrate the superiority of the proposed method over both the baseline RGB-trained detector and state-of-the-art techniques that rely on unsupervised domain adaptation or early image fusion.
 
 
 
@@ -85,7 +90,7 @@ The training flow is programmed in `train.py`. Begin training with the following
 python train.py
 ```
 <p align="center">
-   <img src="images/training.png" alt="Training workflow" width="300"/>
+   <img src="images/workflow.png" alt="Training workflow" width="300"/>
 </p>
 
 
