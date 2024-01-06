@@ -2,7 +2,11 @@
 
 ## Unsupervised Domain Adaptation and Feature Fusion for Shadow-Agnostic Tree Crown Detection from RGB-Thermal Drone Imagery
 
-This is the official code repository for the paper titled above, accepted into the main conference at WACV 2024! It will be available on CVF following the conference on Jan 4-8, 2024, but for now, please refer to the [ArXiv pre-print version](https://arxiv.org/abs/2310.16212). 
+This is the official code repository for the paper titled above, accepted into the main conference at WACV 2024! 
+
+Two ways to access the paper:
+- [CVF open access](https://openaccess.thecvf.com/content/WACV2024/html/Kapil_ShadowSense_Unsupervised_Domain_Adaptation_and_Feature_Fusion_for_Shadow-Agnostic_Tree_WACV_2024_paper.html)
+- [ArXiv pre-print version](https://arxiv.org/abs/2310.16212)
 
 
 
@@ -95,6 +99,13 @@ The evaluation metrics used are implemented in this great repo: [Open-Source Vis
 
 
 ### Citation
-If you found this work useful, please consider citing the arxiv paper – [arXiv:2310.16212](https://arxiv.org/abs/2310.16212) :)
-Once the CVF version is available, the bibtex will be included here. 
-
+If you found this work useful for your own research, please consider citing the paper.
+```bibtex
+@InProceedings{Kapil_2024_WACV,
+    author    = {Kapil, Rudraksh and Marvasti-Zadeh, Seyed Mojtaba and Erbilgin, Nadir and Ray, Nilanjan},
+    title     = {ShadowSense: Unsupervised Domain Adaptation and Feature Fusion for Shadow-Agnostic Tree Crown Detection From RGB-Thermal Drone Imagery},
+    booktitle = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
+    month     = {January},
+    year      = {2024},
+    pages     = {8266-8276}
+```
