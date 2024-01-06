@@ -58,7 +58,7 @@ The dataset can be download from [this Google Drive link](https://drive.google.c
 Note:
    1. Four zip files are provided, one for each of train/validation/test, and the fourth for a labellled subset of the training images, useful for comparison with supervised fine-tuning experiments. 
 
-   2. Each split of the dataset also contains pre-computed masks for every RGB-thermal pair, obtained using watershed segmentation & morpohological operations as described in the paper and implemented in `threshold,.py`.
+   2. Each split of the dataset also contains pre-computed masks for every RGB-thermal pair, obtained using watershed segmentation & morpohological operations as described in the paper and implemented in `threshold.py`.
 
 
 
