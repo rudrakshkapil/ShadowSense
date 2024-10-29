@@ -44,7 +44,7 @@ Two ways to access the paper:
 ### RT-Trees Dataset
 
 #### Download
-The dataset can be download from [this Google Drive link](https://drive.google.com/drive/folders/1cCeA7TPA7qsII1-xOxs19sXTkRMV0fsl?usp=drive_link). Training, validation, and testing images for the Individual Tree Crown Detection task with RGB-thermal multi-modal drone imagery are provided. This dataset is primarily meant for self-supervised training, with ground truth annotations available for only the validation and testing sets - bounding boxes for tree crowns with **difficult** boxes marked as such in the xml file.  
+The dataset can be download from these two links – [RGB+Eval](doi.org/10.5281/zenodo.14007908), [Thermal](https://doi.org/10.5281/zenodo.14008187). Training, validation, and testing images for the Individual Tree Crown Detection task with RGB-thermal multi-modal drone imagery are provided. This dataset is primarily meant for self-supervised training, with ground truth annotations available for only the validation and testing sets - bounding boxes for tree crowns with **difficult** boxes marked as such in the xml file.  
 
 14 drone flights with a DJI H20T sensor were conducted from July to November 2022. In each, ~800 image pairs (RGB & thermal) were captured in total, and the images were geographically divided into 75:5:20 train:val:test sets using GPS. The original image pairs have been cropped to 2000x2000 px. Overlap was retained in training images but removed in the evaluation sets, hence the apparent size disparity. More information regarding RT-Trees can be found in the [supplementary material](https://rudrakshkapil.com/resources/publications/wacv_supplementary.pdf) of the paper. 
 
